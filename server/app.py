@@ -33,11 +33,8 @@ def bakery_by_id(id):
     return make_response ( bakery_serialized, 200  )
   
   elif request.method == 'PATCH':
-    
-    form_data = request.get_json()
-
-    for attr in form_data:
-      setattr(bakery, attr, form_data.get(attr))
+    for attr in request.form:
+      setattr(bakery, attr, request.form.get(attr))
 
     db.session.add(bakery)
     db.session.commit()
@@ -63,22 +60,20 @@ def most_expensive_baked_good():
     most_expensive_serialized = most_expensive.to_dict()
     return make_response( most_expensive_serialized,   200  )
 
-@app.route('/baked_goods', methods=['POST'])
-def backed_goods():
+@app.route('/baked_goods', methods=['GET','POST'])
+def baked_goods():
 
   if request.method == 'POST':
-    data = request.get_json()
     new_baked_good = BakedGood(
-        name=data.get("name"),
-        price=data.get("price"),
-        bakery_id=data.get("bakery_id")
+        name=request.form.get("name"),
+        price=request.form.get("price"),
+        bakery_id=request.form.get("bakery_id")
     )
+
     db.session.add(new_baked_good)
     db.session.commit()
 
-    new_baked_good_dict = new_baked_good.to_dict()
-
-    return make_response(new_baked_good_dict, 200)
+    return make_response(new_baked_good.to_dict(), 201)
   
 @app.route('/baked_goods/<int:id>', methods=['DELETE'])
 def baked_goods_by_id(id):
@@ -93,7 +88,7 @@ def baked_goods_by_id(id):
        "message":"Baked good deleted."
     }
   return make_response(response_body, 200)
-  pass
+  
 
     
 if __name__ == '__main__':
